@@ -23,8 +23,8 @@ void InputHandler::PerformInput(const HandDetection& hd) {
     int x = GetSystemMetrics(SM_CXSCREEN);
     int y = GetSystemMetrics(SM_CYSCREEN);
 
-    float ratio = (float)x/(float)y;
-
+    const float ratio = static_cast<float>(x)/static_cast<float>(y);
+    
     // Check si y'a eu un changement
     bool is_equal = hd.CheckFingerStateChanged();
 
@@ -45,11 +45,11 @@ void InputHandler::PerformInput(const HandDetection& hd) {
             break;
 
         case LEFT_CLICK:
-            //InputHandler::LeftClick();
+            InputHandler::LeftClick();
             break;
 
         case RIGHT_CLICK:
-            //InputHandler::RightClick();
+            InputHandler::RightClick();
             break;
 
         case QUIT:
@@ -60,19 +60,19 @@ void InputHandler::PerformInput(const HandDetection& hd) {
 
 InputType InputHandler::GetInputTypeFromHand(const HandDetection &hd) {
 
-    int finger_count = hd.GetFingerCount();
+    const int finger_count = hd.GetFingerCount();
 
-    if(hd.GetFingerOpened(FingerType::INDEX) && finger_count == 2)
+    if(hd.GetFingerOpened(FingerType::INDEX) && finger_count <= 2)
         return InputType::MOVE;
 
-    if(finger_count >= 5)
+    if(hd.GetFingerOpened(FingerType::THUMB) && finger_count <= 2)
         return InputType::LEFT_CLICK;
 
-    if(finger_count == 0)
+    if(hd.GetFingerOpened(FingerType::MIDDLE) && finger_count <= 2)
         return InputType::RIGHT_CLICK;
 
-    //if(finger_count == 1 && hd.GetFingerOpened(FingerType::THUMB))
-    //    return InputType::QUIT;
+    if(finger_count == 0)
+        return InputType::QUIT;
 
     return InputType::NONE;
 }
