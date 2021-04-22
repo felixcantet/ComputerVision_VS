@@ -3,32 +3,43 @@
 
 #include <opencv2/core/types.hpp>
 
+
+
 class HandDetection;
+enum InputType;
+class InputBase;
 
-enum InputType{
-    NONE,
-    MOVE,
-    LEFT_CLICK,
-    RIGHT_CLICK,
-    QUIT
-};
-
-struct InputHandler {
-
-    static void PerformInput(const HandDetection& hd);
-
+class InputHandler2
+{
 private:
+    static InputHandler2* instance;
+    std::vector<std::shared_ptr<InputBase>> inputs;
+    InputHandler2() = default;
+	
+public:
+    InputHandler2(const InputHandler2& ih) = delete;
 
-    static void MoveCursor(const cv::Point& dir);
-    static void SetCursorPosition(const cv::Point& pos);
+	~InputHandler2()
+	{
+		delete instance;
+	};
+	
+	static InputHandler2* getInstance()
+	{
+        return instance;
+	}
 
-    static void LeftClick();
-    static void RightClick();
+	void RegisterNewInput(std::shared_ptr<InputBase> i)
+	{
+        inputs.push_back(i);
+	}
 
-    static void EscapeKey();
+	void PerformInputs(InputType t);
 
-    static InputType GetInputTypeFromHand(const HandDetection& hd);
+	static InputType GetInputTypeFromHand(const HandDetection& hd);
+	static void MoveCursor(const cv::Point& dir);
+	static void SetCursorPosition(const cv::Point& pos);
+	
 };
-
 
 #endif //COMPUTERVISION_INPUTHANDLER_H

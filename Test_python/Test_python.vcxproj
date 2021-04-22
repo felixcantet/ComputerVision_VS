@@ -80,9 +80,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <PublicIncludeDirectories>C:\Users\felix\AppData\Local\Programs\Python\Python39\include;$(PublicIncludeDirectories)</PublicIncludeDirectories>
+    <IncludePath>D:\Python\Python39\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Python\Python39\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>D:\Python\Python39\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\Python\Python39\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -144,12 +148,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HandDetection.cpp" />
+    <ClCompile Include="InputBase.cpp" />
     <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="KeyboardInput.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MouseInput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HandDetection.h" />
+    <ClInclude Include="InputBase.h" />
     <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="KeyboardInput.h" />
+    <ClInclude Include="MouseInput.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

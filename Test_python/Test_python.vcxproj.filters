@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Fichiers d%27en-tête\Input">
+      <UniqueIdentifier>{c266a00f-63aa-49fb-b953-5e71a6cae90b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Fichiers sources\Input">
+      <UniqueIdentifier>{3b48e0ca-ac65-43da-9baa-640a3024ea9c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HandDetection.cpp">
@@ -24,6 +30,15 @@
     <ClCompile Include="main.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="InputBase.cpp">
+      <Filter>Fichiers sources\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseInput.cpp">
+      <Filter>Fichiers sources\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyboardInput.cpp">
+      <Filter>Fichiers sources\Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HandDetection.h">
@@ -31,6 +46,15 @@
     </ClInclude>
     <ClInclude Include="InputHandler.h">
       <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseInput.h">
+      <Filter>Fichiers d%27en-tête\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="InputBase.h">
+      <Filter>Fichiers d%27en-tête\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyboardInput.h">
+      <Filter>Fichiers d%27en-tête\Input</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

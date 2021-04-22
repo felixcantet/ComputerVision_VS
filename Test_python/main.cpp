@@ -3,10 +3,14 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 
-//#include <Python.h>
+#include <Python.h>
 
 #include "HandDetection.h"
 #include "InputHandler.h"
+
+#include "KeyboardInput.h"
+#include "MouseInput.h"
+
 
 /*  TODO :
  *  - Pouvoir dire l'état de la main (bouge, symbole ?)
@@ -19,95 +23,112 @@
  *  - Créer des "inputs" pour utiliser la souris
  */
 
+class KeyboardInput;
 const float DELAY = (1.0f / 60.0f) * 1000.0f;
 
 
-void DisplayVideo(const char *, HandDetection& handDetection);
+void DisplayVideo(const char*, HandDetection& handDetection);
 
 int main() {
-    std::cout << "Delay is : " << DELAY << std::endl;
+	std::cout << "Delay is : " << DELAY << std::endl;
 
-    //Py_Initialize();
+	Py_Initialize();
 
-    HandDetection handDetection;
+	HandDetection handDetection;
+	handDetection.Initialize();
 
-    handDetection.Initialize();
-    DisplayVideo(nullptr, handDetection);
+	DisplayVideo(nullptr, handDetection);
 
-    //Py_Finalize();
+	Py_Finalize();
 
-    return 0;
+	return 0;
 }
 
-void DisplayVideo(const char *videoname, HandDetection& handDetection) {
+void DisplayVideo(const char* videoname, HandDetection& handDetection) {
 
-    cv::VideoCapture cap;
+	cv::VideoCapture cap;
 
-    //si videoname n’est pas null, ouvrir la DisplayVideo dans cap, sinon ouvrir la camera 0
-    if (videoname != nullptr)
-        cap.open(videoname);
-    else
-        cap.open(0);
+	//si videoname n’est pas null, ouvrir la DisplayVideo dans cap, sinon ouvrir la camera 0
+	if (videoname != nullptr)
+		cap.open(videoname);
+	else
+		cap.open(0);
 
-    //si cap n’est pas ouvert, quitter la fonction
-    if (!cap.isOpened())
-        return;
+	//si cap n’est pas ouvert, quitter la fonction
+	if (!cap.isOpened())
+		return;
 
-    std::string winName = "Video";
+	std::string winName = "Video";
 
-    int frameWidth = cap.get(cv::CAP_PROP_FRAME_WIDTH);
-    int frameHeight = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
-    float aspect_ratio = (float) frameWidth / (float) frameHeight;
-    int inHeight = 225;
-    int inWidth = int(aspect_ratio * inHeight);
+	int frameWidth = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+	int frameHeight = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+	float aspect_ratio = (float)frameWidth / (float)frameHeight;
+	int inHeight = 225;
+	int inWidth = int(aspect_ratio * inHeight);
 
-    cv::Mat frame;
+	cv::Mat frame;
 
-    //recuperer une image depuis cap et la stocker dans frame
-    cap.read(frame);
+	//recuperer une image depuis cap et la stocker dans frame
+	cap.read(frame);
 
-    //cv::namedWindow(winName, cv::WINDOW_NORMAL);
-    //cv::setWindowProperty(winName, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+	//cv::namedWindow(winName, cv::WINDOW_NORMAL);
+	//cv::setWindowProperty(winName, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
 
-    while (!frame.empty()) {
-        std::cout << "====================== \n" << std::endl;
-        double t = (double) cv::getTickCount();
+	int x = GetSystemMetrics(SM_CXSCREEN);
+	int y = GetSystemMetrics(SM_CYSCREEN);
 
-        cv::flip(frame, frame, 1);
+	const float ratio = static_cast<float>(x) / static_cast<float>(y);
 
-        handDetection.DetectHand(frame , inWidth, inHeight, frameWidth, frameHeight);
-        handDetection.DrawHand(frame);
+	InputHandler2::getInstance()->RegisterNewInput(std::make_shared<MouseLeftInput>(MouseLeftInput()));
+	InputHandler2::getInstance()->RegisterNewInput(std::make_shared<MouseRightInput>(MouseRightInput()));
+	InputHandler2::getInstance()->RegisterNewInput(std::make_shared<EscapeInput>(EscapeInput()));
 
-        int fingerCount = handDetection.GetFingerCount();
-        bool hand_open = handDetection.GetHandOpened();
-        bool thumb_open = handDetection.GetFingerOpened(FingerType::THUMB);
+	while (!frame.empty()) {
+		std::cout << "====================== \n" << std::endl;
+		double t = (double)cv::getTickCount();
 
-        InputHandler::PerformInput(handDetection);
+		cv::flip(frame, frame, 1);
 
-        std::cout << "There is : " << fingerCount << " open\n" <<
-                  "The hand is " << (hand_open ? "open" : "close") << "\n" <<
-                  "The thumb is " << (thumb_open ? "open" : "close") << std::endl;
+		handDetection.DetectHand(frame, inWidth, inHeight, frameWidth, frameHeight);
+		handDetection.DrawHand(frame);
 
-        t = ((double) cv::getTickCount() - t) / cv::getTickFrequency();
-        cv::putText(frame, cv::format("time taken = %.4f sec", t), cv::Point(50, 50), cv::FONT_HERSHEY_COMPLEX, .8,
-                    cv::Scalar(255, 50, 0), 2);
+		int fingerCount = handDetection.GetFingerCount();
+		bool hand_open = handDetection.GetHandOpened();
+		bool thumb_open = handDetection.GetFingerOpened(FingerType::THUMB);
 
-        cv::imshow(winName, frame);
+		auto type = InputHandler2::GetInputTypeFromHand(handDetection);
 
-        int key = cv::waitKey(DELAY);
-        if (key == 27) // 27 == echap
-        {
-            cv::putText(frame, "ON FERME", cv::Point(1.0f, frameHeight * 0.5f), cv::FONT_HERSHEY_COMPLEX, 2.0f,
-                        cv::Scalar(255, 50, 0), 2);
-            cv::imshow(winName, frame);
-            cv::waitKey(2000);
-            break;
-        }
+		//InputHandler::PerformInput(handDetection);
+		if (type == InputType::MOVE)
+			InputHandler2::MoveCursor(handDetection.GetHandOffset() * ratio);
 
-        // - > recuperer une nouvelle image et la stocker dans frame
-        cap.read(frame);
-    }
+		if(handDetection.CheckFingerStateChanged())
+			InputHandler2::getInstance()->PerformInputs(type);
 
-    cap.release();
-    cv::destroyAllWindows();
+		std::cout << "There is : " << fingerCount << " open\n" <<
+			"The hand is " << (hand_open ? "open" : "close") << "\n" <<
+			"The thumb is " << (thumb_open ? "open" : "close") << std::endl;
+
+		t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+		cv::putText(frame, cv::format("time taken = %.4f sec", t), cv::Point(50, 50), cv::FONT_HERSHEY_COMPLEX, .8,
+			cv::Scalar(255, 50, 0), 2);
+
+		cv::imshow(winName, frame);
+
+		int key = cv::waitKey(DELAY);
+		if (key == 27) // 27 == echap
+		{
+			cv::putText(frame, "ON FERME", cv::Point(1.0f, frameHeight * 0.5f), cv::FONT_HERSHEY_COMPLEX, 2.0f,
+				cv::Scalar(255, 50, 0), 2);
+			cv::imshow(winName, frame);
+			cv::waitKey(2000);
+			break;
+		}
+
+		// - > recuperer une nouvelle image et la stocker dans frame
+		cap.read(frame);
+	}
+
+	cap.release();
+	cv::destroyAllWindows();
 }
